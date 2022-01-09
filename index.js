@@ -13,13 +13,14 @@ const { dirname } = require('path');
 const isDevelopment = process.env.ENV === 'development';
 
 const REDIS_URL = isDevelopment ?
-'redis://127.0.0.1:6379' :
-'redis://:pa7687c0e4bb6f09477b7f87f92f35c488dbb8558633492dd43d52f392852f2a0@ec2-3-223-48-171.compute-1.amazonaws.com:16629';
+    'redis://127.0.0.1:6379' :
+    'redis://:pa7687c0e4bb6f09477b7f87f92f35c488dbb8558633492dd43d52f392852f2a0@ec2-3-223-48-171.compute-1.amazonaws.com:16629';
 
 const DEFAULT_PORT = 3000;
+
 const ROOT_NODE_ADDRESS = isDevelopment ?
- `http://localhost:${DEFAULT_PORT}` :
- 'https://sleepy-brook-76329.herokuapp.com';
+    `http://localhost:${DEFAULT_PORT}` :
+    'https://sleepy-brook-76329.herokuapp.com';
 
 const app = express();
 const blockchain = new Blockchain();
@@ -34,6 +35,25 @@ app.use(express.static(path.join(__dirname, 'client/dist')));
 app.get('/api/blocks', (req, res) => {
     res.json(blockchain.chain);
 });
+
+app.get('/api/blocks/length', (req, res) => {
+    res.json(blockchain.chain.length);
+});
+
+app.get('/api/blocks/:id', (req, res) => {
+    const { id } = req.params;
+    const { length } = blockchain.chain;
+
+    const blocksReversed = blockchain.chain.slice().reverse();
+
+    let startIndex = (id-1) * 5;
+    let endIndex = id *5;
+
+    startIndex = startIndex < length ? startIndex : length;
+    endIndex = endIndex < length ? endIndex : length;
+
+    res.json(blocksReversed.slice(startIndex, endIndex));
+})
 
 app.post('/api/mine', (req, res) => {
     const { data } = req.body;
@@ -91,6 +111,20 @@ app.get('/api/wallet-info', (req, res) => {
     });
 });
 
+app.get('/api/known-addresses', (req, res) => {
+    const addressMap = {};
+
+    for (let block of blockchain.chain) {
+        for (let transaction of block.data) {
+            const recipient = Object.keys(transaction.outputMap);
+
+            recipient.forEach(recipient => addressMap[recipient] = recipient);
+        }
+    }
+
+    res.json(Object.keys(addressMap));
+});
+
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'client/dist/index.html'));
 });
@@ -139,7 +173,7 @@ if (isDevelopment) {
         wallet: walletBar, recipient: wallet.publisherKey, amount: 15
     });
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
         if (i % 3 === 0) {
             walletAction();
             walletFooAction();

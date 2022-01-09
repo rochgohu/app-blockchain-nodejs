@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
-// import { FormGroup, FormControl, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import Transaction from './Transaction';
+import { Button } from 'react-bootstrap';
+import history from '../history';
+
 
 const POLL_INTERVAL_MS = 10000;
 
@@ -13,6 +15,19 @@ class TransactionPool extends Component {
             .then(response => response.json())
             .then(json => this.setState({ transactionPoolMap: json }));
     }
+
+    fetchMineTransactions = () => {
+        fetch(`${document.location.origin}/api/mine-transactions`)
+            .then(response => {
+                if(response.status === 200) {
+                    alert('success');
+                    history.push('/blocks');
+                } else {
+                    alert('The mine-transactions blkock request did not complete.');
+                }
+            });
+    }
+
     componentDidMount() {
         this.fetchTransactionPoolMap();
 
@@ -40,8 +55,14 @@ class TransactionPool extends Component {
                         );
                     })
                 }
+                <Button
+                    bsStyle="danger"
+                    onClick={this.fetchMineTransactions}
+                >
+                    Mine the Transactions
+                </Button>
             </div>
-        );
+        )
     }
 
 }
