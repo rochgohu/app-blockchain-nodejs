@@ -17,7 +17,9 @@ const REDIS_URL = isDevelopment ?
 'redis://:pa7687c0e4bb6f09477b7f87f92f35c488dbb8558633492dd43d52f392852f2a0@ec2-3-223-48-171.compute-1.amazonaws.com:16629';
 
 const DEFAULT_PORT = 3000;
-const ROOT_NODE_ADDRESS = `http://localhost:${DEFAULT_PORT}`;
+const ROOT_NODE_ADDRESS = isDevelopment ?
+ `http://localhost:${DEFAULT_PORT}` :
+ 'https://sleepy-brook-76329.herokuapp.com';
 
 const app = express();
 const blockchain = new Blockchain();
